@@ -1,0 +1,42 @@
+[
+  {
+    "question": "Now tell me how many files are there",
+    "answer": "There are **four** files in the folder:\n\n1. `entra.html`  \n2. `okta.html`  \n3. `public.html`  \n4. `test.html`"
+  },
+  {
+    "question": "Now tell me how many files are there",
+    "answer": "There are **four** files in the folder:\n\n1. `entra.html`  \n2. `okta.html`  \n3. `public.html`  \n4. `test.html`"
+  },
+  {
+    "question": "How many apps are there currently?",
+    "answer": "There are **three** applications in the portal:\n\n1. **Financial Portal \u2013 Entra ID** (`entra.html`)  \n2. **Financial Portal \u2013 Okta** (`okta.html`)  \n3. **Financial Portal \u2013 Public demo** (`public.html`)  "
+  },
+  {
+    "question": "List apps in my folder",
+    "answer": "The folder contains three applications:\n\n1. **Financial Portal \u2013 Entra ID** (`entra.html`)  \n2. **Financial Portal \u2013 Okta** (`okta.html`)  \n3. **Financial Portal \u2013 Public demo** (`public.html`)  "
+  },
+  {
+    "question": "List now and give me a line about them",
+    "answer": "Here are the items in the folder, each with a short description:\n\n- **entra.html** \u2013 Financial portal protected by Microsoft Entra\u202fID (Azure AD); uses MSAL.js for login and client\u2011side RBAC based on the token\u2019s `roles` claim.  \n- **okta.html** \u2013 Same portal UI but secured with Okta; uses the Okta Auth JS SDK and derives roles from the user\u2019s Okta groups.  \n- **public.html** \u2013 Unprotected demo of the portal; all sections (including the admin UI) are visible to anyone.  \n- **test.html** \u2013 Simple static restaurant\u2011menu page; unrelated to the financial portal and contains no authentication or sensitive data."
+  },
+  {
+    "question": "How many websites are there in my folder",
+    "answer": "There are **three** websites in your folder:\n\n1. **entra.html** \u2013 Financial portal secured with Microsoft Entra\u202fID.  \n2. **okta.html** \u2013 Financial portal secured with Okta.  \n3. **public.html** \u2013 Unprotected public demo of the portal.  \n\n(The `test.html` file is just a static restaurant\u2011menu page and isn\u2019t a website for the financial portal.)"
+  },
+  {
+    "question": "List me all apps",
+    "answer": "Here are the three applications (apps) in your folder:\n\n1. **Financial Portal \u2013 Entra ID** (`entra.html`) \u2013 secured with Microsoft Entra ID (Azure AD) and uses client\u2011side RBAC.  \n2. **Financial Portal \u2013 Okta** (`okta.html`) \u2013 secured with Okta and also uses client\u2011side RBAC.  \n3. **Financial Portal \u2013 Public demo** (`public.html`) \u2013 an unprotected version that shows all sections to anyone.   (The `test.html` file is just a static restaurant\u2011menu page and isn\u2019t part of the financial portal.)"
+  },
+  {
+    "question": "Ok even though this is an app right.. so show me as an app ok",
+    "answer": "Sure! Here\u2019s a concise view of the **Financial Portal** as a single application, pulling together the two authenticated versions (Entra\u202fID and Okta) and the public demo:\n\n- **Name:** Financial Portal  \n- **Purpose:** Provide users with a dashboard, reports, and an admin console for managing financial data.  \n- **Front\u2011end Stack:** Pure HTML\u202f+\u202fJavaScript; uses either **MSAL.js** (for Azure AD) or **Okta Auth JS** (for Okta) to handle authentication.  \n- **Authentication Options:**  \n  1. **Microsoft Entra\u202fID** \u2013 OAuth\u202f2.0 Authorization Code flow with PKCE (popup).  \n  2. **Okta** \u2013 OAuth\u202f2.0 Authorization Code flow (redirect).  \n- **Authorization:** Client\u2011side RBAC that shows or hides UI sections (`Dashboard`, `Reports`, `Admin`) based on the user\u2019s role (`Admin`, `Analyst`, `User`).  \n- **Key UI Sections:**  \n  - **Dashboard** \u2013 visible to all roles.  \n  - **Reports** \u2013 visible to Admin and Analyst.  \n  - **Admin** \u2013 visible to Admin only.  \n- **Public Demo:** `public.html` displays every section without any login, useful for UI testing but not for production.  \n\nIn short, the portal is a single\u2011page web app that can be secured with either Azure AD or Okta, with role\u2011based UI rendering handled in the browser."
+  },
+  {
+    "question": "List me all apps",
+    "answer": "Here are the three applications (apps) in your folder:\n\n1. **Financial Portal \u2013 Entra\u202fID** (`entra.html`) \u2013 the portal secured with Microsoft Entra\u202fID (Azure AD) using MSAL.js.  \n2. **Financial Portal \u2013 Okta** (`okta.html`) \u2013 the same portal secured with Okta using the Okta Auth JS SDK.  \n3. **Financial Portal \u2013 Public demo** (`public.html`) \u2013 an unprotected version that shows all UI sections to anyone.  \n\n(The `test.html` file is just a static restaurant\u2011menu page and isn\u2019t part of the financial portal.)"
+  },
+  {
+    "question": "Hello what are you doing",
+    "answer": "Hello! I\u2019m here to help you with anything related to the financial portal project\u2014whether you need a quick answer about the files and apps, a security review, guidance on authentication/authorization, or anything else you\u2019re working on. Just let me know what you\u2019d like to discuss!"
+  }
+]

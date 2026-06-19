@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Security Copilot</title>
+
+    <link rel="stylesheet"
+          href="style.css">
+</head>
+
+<body>
+
+<div class="app">
+
+    <aside class="sidebar">
+
+        <div class="logo">
+
+            <div class="logo-icon">
+                🛡
+            </div>
+
+            <div>
+
+                <div class="logo-title">
+                    Security Copilot
+                </div>
+
+                <div class="logo-subtitle">
+                    Identity & Risk Analysis
+                </div>
+
+            </div>
+
+        </div>
+
+        <button class="new-chat-btn">
+            + New Chat
+        </button>
+
+        <div class="sidebar-search-wrapper">
+            <input class="sidebar-search" type="search" placeholder="Search chats…" aria-label="Search chats">
+        </div>
+
+        <div class="sidebar-section">
+
+            <div class="sidebar-heading">
+                Recent Chats
+            </div>
+
+            <div class="chat-item">
+                Authentication Review
+            </div>
+
+            <div class="chat-item">
+                RBAC Analysis
+            </div>
+
+            <div class="chat-item">
+                Security Assessment
+            </div>
+
+            <div class="chat-item">
+                Entra vs Okta
+            </div>
+
+        </div>
+
+        <div class="sidebar-footer">
+            <button id="themeToggleBtn" class="theme-toggle-btn" type="button">
+                🌓 Toggle Theme
+            </button>
+        </div>
+
+    </aside>
+
+    <main class="main">
+
+        <button class="mobile-menu-btn" type="button" aria-label="Toggle sidebar">
+            ☰
+        </button>
+
+        <div id="backendStatusBanner" class="status-banner"></div>
+
+        <div id="chatHistory"
+             class="chat-history">
+
+            <div class="welcome-container">
+
+                <div class="welcome-icon">
+                    🛡
+                </div>
+
+                <h1>
+                    Security Copilot
+                </h1>
+
+                <p>
+                    Analyze your Entra ID, Okta, RBAC,
+                    authentication and authorization flows.
+                </p>
+
+                <div class="suggestions">
+
+                    <button
+                        onclick="fillPrompt('Review the complete Project and give the detailed report of the project in the pdf format')">
+
+                        Review Project
+
+                    </button>
+
+                    <button
+                        onclick="fillPrompt('Compare all the apps present and tabulate them')">
+
+                        Compare Apps
+
+                    </button>
+
+                    <button
+                        onclick="fillPrompt('Show top security risks having in the websites in the network')">
+
+                        Show Risks
+
+                    </button>
+
+                    <button
+                        onclick="fillPrompt('Review RBAC implementation in the apps available in the network')">
+
+                        Review RBAC
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <form id="chatForm"
+              class="chat-input-container">
+
+            <div class="input-wrapper">
+
+                <textarea
+                    id="question"
+                    rows="1"
+                    placeholder="ask anything here."></textarea>
+
+                <button
+                    id="askBtn"
+                    type="submit">
+
+                    Send
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </main>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+
+</html>

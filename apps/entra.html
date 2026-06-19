@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Financial Portal - Entra ID RBAC</title>
+
+    <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+
+    <style>
+        body{
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f4f6f9;
+        }
+
+        .card{
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 10px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+
+        h1{
+            color:#0078d4;
+        }
+
+        button{
+            padding:10px 20px;
+            margin-right:10px;
+            border:none;
+            border-radius:5px;
+            cursor:pointer;
+            background:#0078d4;
+            color:white;
+        }
+
+        #content{
+            display:none;
+        }
+
+        #loginMessage{
+            background:white;
+            padding:20px;
+            border-radius:10px;
+            margin-top:20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Financial Portal - Entra ID</h1>
+
+<button onclick="login()">Login with Entra ID</button>
+<button onclick="logout()">Logout</button>
+
+<div id="loginMessage">
+    Please login using Microsoft Entra ID to access the portal.
+</div>
+
+<div id="content">
+
+    <div id="userInfo" class="card">
+        <h3>User Details</h3>
+
+        <p>Name: Loading...</p>
+        <p>Email: Loading...</p>
+        <p>Role: Loading...</p>
+    </div>
+
+    <div id="dashboard" class="card">
+        <h2>Dashboard</h2>
+
+        <p><b>Balance:</b> ₹5,20,000</p>
+        <p><b>Investments:</b> ₹1,80,000</p>
+        <p><b>Loans:</b> ₹75,000</p>
+    </div>
+
+    <div id="reports" class="card">
+        <h2>Reports Section</h2>
+
+        <p>Monthly Revenue Report</p>
+        <p>Quarterly Risk Analysis</p>
+        <p>Compliance Report</p>
+    </div>
+
+    <div id="admin" class="card">
+        <h2>Admin Section</h2>
+
+        <p>User Management</p>
+        <p>Loan Approval Dashboard</p>
+        <p>Access Reviews</p>
+    </div>
+
+</div>
+
+<script>
+
+// ======================================
+// Entra ID Configuration
+// ======================================
+
+const msalConfig = {
+    auth: {
+        clientId: "64da3702-0940-4a2f-a619-da4d5a7378a5",
+        authority:
+            "https://login.microsoftonline.com/6f8d31d0-378b-41f4-b7f6-c7cf7ec5bda1",
+
+        redirectUri:
+            window.location.origin +
+            window.location.pathname
+    },
+
+    cache: {
+        cacheLocation: "sessionStorage",
+        storeAuthStateInCookie: false
+    }
+};
+
+const msalInstance =
+    new msal.PublicClientApplication(msalConfig);
+
+
+// ======================================
+// Login
+// ======================================
+
+async function login() {
+
+    try {
+
+        const response =
+            await msalInstance.loginPopup({
+                scopes: ["User.Read"]
+            });
+
+        console.log("Login Response:", response);
+        console.log("Token Claims:",
+            response.idTokenClaims);
+
+        sessionStorage.setItem(
+            "userData",
+            JSON.stringify(response)
+        );
+
+        showUser(response);
+
+    }
+    catch(error){
+
+        console.error("Login Error:", error);
+
+        alert(
+            "Login failed. Check browser console."
+        );
+    }
+}
+
+
+// ======================================
+// Logout
+// ======================================
+
+async function logout() {
+
+    sessionStorage.clear();
+
+    document.getElementById("content")
+        .style.display = "none";
+
+    document.getElementById("loginMessage")
+        .style.display = "block";
+
+    document.querySelector(
+        'button[onclick="login()"]'
+    ).style.display = "inline-block";
+}
+
+// ======================================
+// RBAC Logic
+// ======================================
+
+function applyRBAC(role){
+
+    document.getElementById("dashboard")
+        .style.display = "none";
+
+    document.getElementById("reports")
+        .style.display = "none";
+
+    document.getElementById("admin")
+        .style.display = "none";
+
+    switch(role){
+
+        case "Admin":
+
+            document.getElementById("dashboard")
+                .style.display = "block";
+
+            document.getElementById("reports")
+                .style.display = "block";
+
+            document.getElementById("admin")
+                .style.display = "block";
+
+            break;
+
+        case "Analyst":
+
+            document.getElementById("dashboard")
+                .style.display = "block";
+
+            document.getElementById("reports")
+                .style.display = "block";
+
+            break;
+
+        case "User":
+
+            document.getElementById("dashboard")
+                .style.display = "block";
+
+            break;
+
+        default:
+
+            document.getElementById("dashboard")
+                .style.display = "block";
+    }
+}
+
+
+// ======================================
+// Show User Details
+// ======================================
+
+function showUser(response){
+
+    const roles =
+        response.idTokenClaims?.roles || [];
+
+    let role = "User";
+
+    if(roles.includes("Admin")){
+
+        role = "Admin";
+    }
+    else if(roles.includes("Analyst")){
+
+        role = "Analyst";
+    }
+    else if(roles.includes("User")){
+
+        role = "User";
+    }
+
+    document.getElementById("loginMessage")
+        .style.display = "none";
+
+    document.getElementById("content")
+        .style.display = "block";
+
+    document.querySelector(
+        'button[onclick="login()"]'
+    ).style.display = "none";
+
+    document.getElementById("userInfo")
+        .innerHTML = `
+            <h3>User Details</h3>
+
+            <p>
+                <b>Name:</b>
+                ${response.account.name || "N/A"}
+            </p>
+
+            <p>
+                <b>Email:</b>
+                ${response.account.username || "N/A"}
+            </p>
+
+            <p>
+                <b>Role:</b>
+                <span style="
+                    background:#0078d4;
+                    color:white;
+                    padding:4px 8px;
+                    border-radius:5px;">
+                    ${role}
+                </span>
+            </p>
+        `;
+
+    applyRBAC(role);
+}
+
+
+// ======================================
+// Auto Login Check
+// ======================================
+
+async function initialize() {
+
+    try {
+
+        const accounts =
+            msalInstance.getAllAccounts();
+
+        if(accounts.length > 0){
+
+            const account = accounts[0];
+
+            const response =
+                await msalInstance.acquireTokenSilent({
+                    account: account,
+                    scopes: ["User.Read"]
+                });
+
+            showUser({
+                account: account,
+                idTokenClaims:
+                    response.idTokenClaims || {}
+            });
+        }
+
+    }
+    catch(error){
+
+        console.log(
+            "No active login found:",
+            error
+        );
+    }
+}
+
+initialize();
+
+</script>
+
+</body>
+</html>

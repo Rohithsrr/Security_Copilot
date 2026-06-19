@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Financial Portal - Okta RBAC</title>
+
+    <script src="https://global.oktacdn.com/okta-auth-js/7.7.0/okta-auth-js.min.js"></script>
+    <style>
+        body{
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f4f6f9;
+        }
+
+        .card{
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 10px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+
+        h1{
+            color:#0078d4;
+        }
+
+        button{
+            padding:10px 20px;
+            margin-right:10px;
+            border:none;
+            border-radius:5px;
+            cursor:pointer;
+            background:#0078d4;
+            color:white;
+        }
+
+        #content{
+            display:none;
+        }
+
+        #loginMessage{
+            background:white;
+            padding:20px;
+            border-radius:10px;
+            margin-top:20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Financial Portal</h1>
+
+<button onclick="login()">Login with Okta</button>
+<button onclick="logout()">Logout</button>
+
+<div id="loginMessage">
+    Please login using Okta to access the portal.
+</div>
+
+<div id="content">
+
+    <div id="userInfo" class="card">
+        <h3>User Details</h3>
+
+        <p>Name: Loading...</p>
+        <p>Email: Loading...</p>
+        <p>Role: Loading...</p>
+    </div>
+
+    <div id="dashboard" class="card">
+        <h2>Dashboard</h2>
+
+        <p><b>Balance:</b> ₹5,20,000</p>
+        <p><b>Investments:</b> ₹1,80,000</p>
+        <p><b>Loans:</b> ₹75,000</p>
+    </div>
+
+    <div id="reports" class="card">
+        <h2>Reports Section</h2>
+
+        <p>Monthly Revenue Report</p>
+        <p>Quarterly Risk Analysis</p>
+        <p>Compliance Report</p>
+    </div>
+
+    <div id="admin" class="card">
+        <h2>Admin Section</h2>
+
+        <p>User Management</p>
+        <p>Loan Approval Dashboard</p>
+        <p>Access Reviews</p>
+    </div>
+
+</div>
+
+<script>
+const oktaAuth = new OktaAuth({
+    issuer: "https://integrator-5423755.okta.com/oauth2/default",
+    clientId: "0oa148clnlfMEhlFa698",
+    redirectUri: "http://localhost:5500/okta.html",
+    scopes: ["openid", "profile", "email"]
+});
+
+async function login() {
+    await oktaAuth.signInWithRedirect();
+}
+
+async function logout() {
+
+    await oktaAuth.signOut({
+        postLogoutRedirectUri:
+            "http://localhost:5500/okta.html"
+    });
+}
+function applyRBAC(role){
+
+    // Hide everything first
+
+    document.getElementById("dashboard").style.display = "none";
+    document.getElementById("reports").style.display = "none";
+    document.getElementById("admin").style.display = "none";
+
+    switch(role){
+
+        case "Admin":
+            document.getElementById("dashboard").style.display = "block";
+            document.getElementById("reports").style.display = "block";
+            document.getElementById("admin").style.display = "block";
+            break;
+
+        case "Analyst":
+            document.getElementById("dashboard").style.display = "block";
+            document.getElementById("reports").style.display = "block";
+            break;
+
+        case "User":
+            document.getElementById("dashboard").style.display = "block";
+            break;
+
+        default:
+            document.getElementById("dashboard").style.display = "block";
+    }
+}
+async function initialize() {
+
+    try {
+
+        if (oktaAuth.isLoginRedirect()) {
+            await oktaAuth.handleRedirect();
+        }
+
+        const authenticated =
+            await oktaAuth.isAuthenticated();
+
+        if (!authenticated) {
+            return;
+        }
+
+        const user =
+            await oktaAuth.getUser();
+
+        
+        const role =
+    user.groups?.includes("Admin")
+        ? "Admin"
+        : user.groups?.includes("Analyst")
+        ? "Analyst"
+        : "User";
+
+            
+
+        document.getElementById("loginMessage")
+            .style.display = "none";
+
+        document.getElementById("content")
+            .style.display = "block";
+
+        document.querySelector('button[onclick="login()"]')
+            .style.display = "none";
+
+        document.getElementById("userInfo")
+    .innerHTML = `
+        <h3>User Details</h3>
+        <p><b>Name:</b> ${user.name || "N/A"}</p>
+        <p><b>Email:</b> ${user.email || "N/A"}</p>
+        <p>
+            <b>Role:</b>
+            <span style="
+                background:#0078d4;
+                color:white;
+                padding:4px 8px;
+                border-radius:5px;">
+                ${role}
+            </span>
+        </p>
+    `;
+
+        applyRBAC(role);
+
+    }
+    catch(error){
+        console.error("Authentication Error:", error);
+    }
+}
+
+initialize();
+
+</script>
+
+</body>
+</html>

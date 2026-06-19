@@ -1,0 +1,66 @@
+{
+  "applications": [
+    "entra.html \u2013 Financial Portal with Microsoft Entra ID authentication and client\u2011side RBAC",
+    "okta.html \u2013 Financial Portal with Okta authentication and client\u2011side RBAC",
+    "public.html \u2013 Unauthenticated version of the portal exposing all sections"
+  ],
+  "authentication": [
+    {
+      "app": "entra.html",
+      "method": "MSAL.js (loginPopup) using Microsoft Entra ID (Azure AD) \u2013 OAuth 2.0 / OpenID Connect",
+      "details": "clientId and authority are hard\u2011coded; token is stored in sessionStorage; silent token acquisition on page load."
+    },
+    {
+      "app": "okta.html",
+      "method": "Okta Auth JS \u2013 redirect flow (signInWithRedirect) using OpenID Connect",
+      "details": "clientId, issuer and redirectUri are hard\u2011coded; authentication state is kept by Okta SDK; no explicit token handling in the page."
+    },
+    {
+      "app": "public.html",
+      "method": "None \u2013 static page, no authentication."
+    }
+  ],
+  "authorization": [
+    {
+      "app": "entra.html",
+      "type": "Client\u2011side role based access control (RBAC)",
+      "implementation": "Roles are read from the id token claim `roles`. UI sections (dashboard, reports, admin) are shown/hidden via DOM manipulation based on role (Admin, Analyst, User)."
+    },
+    {
+      "app": "okta.html",
+      "type": "Client\u2011side role based access control (RBAC)",
+      "implementation": "Roles are inferred from Okta group membership (`user.groups`). UI sections are shown/hidden in the same way as Entra."
+    },
+    {
+      "app": "public.html",
+      "type": "No authorization \u2013 all sections are visible."
+    }
+  ],
+  "roles": [
+    "Admin \u2013 full access to dashboard, reports, and admin sections",
+    "Analyst \u2013 access to dashboard and reports",
+    "User \u2013 access to dashboard only"
+  ],
+  "risks": [
+    "Client\u2011side RBAC can be bypassed by manipulating the DOM or crafting requests directly to backend APIs (if any).",
+    "Sensitive financial data is rendered in the browser before any server\u2011side authorization check.",
+    "Tokens and user data are stored in `sessionStorage`, which is vulnerable to XSS attacks.",
+    "Hard\u2011coded client IDs, tenant IDs, and redirect URIs expose configuration details and may be misused.",
+    "No HTTPS enforcement shown; if served over HTTP, tokens can be intercepted.",
+    "No validation of token signatures or expiration on the client; expired or tampered tokens could be accepted.",
+    "Public version (`public.html`) leaks full admin UI without any protection, providing an easy target for information disclosure.",
+    "Lack of CSRF protection for logout actions that rely on simple redirects."
+  ],
+  "recommendations": [
+    "Move RBAC enforcement to a trusted backend service; the client should only request data it is authorized to receive.",
+    "Validate JWT signatures, issuer, audience, and expiration on the server before using any claims.",
+    "Store tokens in secure, httpOnly cookies rather than `sessionStorage` to mitigate XSS.",
+    "Implement Content Security Policy (CSP) and sanitize any dynamic content to reduce XSS risk.",
+    "Do not hard\u2011code tenant IDs, client IDs, or redirect URIs in public\u2011facing code; load them from environment variables or a secure configuration service.",
+    "Serve the application exclusively over HTTPS and enable HSTS.",
+    "Remove the unauthenticated `public.html` version or protect it with at least basic authentication.",
+    "Add proper logout handling that revokes tokens on the identity provider and clears server\u2011side sessions.",
+    "Consider using Microsoft Entra ID and Okta SDKs\u2019 built\u2011in token validation utilities rather than manual claim checks.",
+    "Log authentication and authorization events and monitor for anomalous activity."
+  ]
+}
