@@ -789,9 +789,17 @@ async function askQuestion() {
 
         handleUpdatingBanner(data.is_updating);
 
-        const startTime = Date.now();
-        await streamAssistantResponse(pendingReply, planText, answerText, replyHtml);
-        const durationMs = Date.now() - startTime;
+        // MODIFICATION: If the tab is hidden or minimized when data arrives, skip the simulated
+        // typing effect interval animation completely so browser throttling doesn't stall execution.
+        let durationMs = 0;
+        if (document.hidden) {
+            pendingReply.innerHTML = replyHtml;
+            durationMs = 50; // Mock minimal speed delta for background execution
+        } else {
+            const startTime = Date.now();
+            await streamAssistantResponse(pendingReply, planText, answerText, replyHtml);
+            durationMs = Date.now() - startTime;
+        }
         
         const generatedMetrics = calculateTokenMetrics(answerText, durationMs);
         const conversation = getCurrentConversation();
@@ -831,6 +839,13 @@ async function streamAssistantResponse(element, planText, answerText, finalHtml)
     let position = 0;
     return new Promise((resolve) => {
         streamTimer = setInterval(() => {
+            // Check dynamically mid-execution: if tab becomes hidden, instantly complete stream
+            if (document.hidden) {
+                clearInterval(streamTimer);
+                element.innerHTML = finalHtml;
+                resolve();
+                return;
+            }
             position += 1;
             element.textContent = answerText.slice(0, position);
             if (position >= answerText.length) {
