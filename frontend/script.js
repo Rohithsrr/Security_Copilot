@@ -1,6 +1,6 @@
 // Replace your old localhost links with your production Render server links:
-const API_URL = "https://security-copilot-backend.onrender.com/ask";
-const STATUS_URL = "https://security-copilot-backend.onrender.com/";
+const API_URL = "http://127.0.0.1:8000/ask";
+const STATUS_URL = "http://127.0.0.1:8000/";
 const STORAGE_KEY = "securityAgentConversations";
 const THEME_KEY = "securityAgentTheme";
 const chatForm = document.getElementById("chatForm");
@@ -837,26 +837,28 @@ async function streamAssistantResponse(element, planText, answerText, finalHtml)
     if (!element) return;
     element.textContent = "";
     let position = 0;
+    
     return new Promise((resolve) => {
         streamTimer = setInterval(() => {
-            // Check dynamically mid-execution: if tab becomes hidden, instantly complete stream
             if (document.hidden) {
                 clearInterval(streamTimer);
                 element.innerHTML = finalHtml;
                 resolve();
                 return;
             }
-            position += 1;
+            
+            // Advance by 15 characters per tick instead of 1 character to speed it up drastically
+            position += 15; 
             element.textContent = answerText.slice(0, position);
+            
             if (position >= answerText.length) {
                 clearInterval(streamTimer);
                 element.innerHTML = finalHtml;
                 resolve();
             }
-        }, 18);
+        }, 10); // Dropped tick interval down to 10ms
     });
 }
-
 function scrollToBottom() {
     if (chatHistory) chatHistory.scrollTop = chatHistory.scrollHeight;
 }
