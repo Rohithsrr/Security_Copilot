@@ -53,7 +53,7 @@ def ask_agent(question):
         )
 
     prompt = f"""
-You are an expert Financial Security AI Agent.
+You are an expert CyberSecurity AI Agent.
 
 CURRENT PLAN:
 
