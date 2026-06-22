@@ -1,6 +1,6 @@
 // Replace your old localhost links with your production Render server links:
-const API_URL = "http://127.0.0.1:8000/ask";
-const STATUS_URL = "http://127.0.0.1:8000/";
+const API_URL = "https://security-copilot-backend.onrender.com/ask";
+const STATUS_URL = "https://security-copilot-backend.onrender.com/";
 const STORAGE_KEY = "securityAgentConversations";
 const THEME_KEY = "securityAgentTheme";
 const chatForm = document.getElementById("chatForm");
