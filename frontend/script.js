@@ -891,7 +891,7 @@ function exportConversation(format) {
 
 function handleUpdatingBanner(isUpdating) {
     if (!statusBanner) return;
-    if (isUpdating) {
+    if (isUpdating == true) {
         statusBanner.className = "status-banner status-updating";
         statusBanner.innerHTML = "⚠️ The Copilot is dynamically rebuilding its security knowledge base. You can continue querying safely via existing models.";
     } else {
