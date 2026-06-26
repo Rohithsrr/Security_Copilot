@@ -426,7 +426,7 @@ function createMessageBubble(text, role, options = {}) {
     if (role === "assistant" && options.metrics) {
         const metricsContainer = document.createElement("div");
         metricsContainer.className = "message-metrics-badge";
-        metricsContainer.textContent = `⏱️ ${options.metrics.wordCount} words | ${options.metrics.speed} words/sec`;
+        metricsContainer.textContent = `⏱️ ${options.metrics.wordCount} words | ${options.metrics.speed} words/sec (RTT: ${options.metrics.rtt}s)`;
         bubble.appendChild(metricsContainer);
     }
 
@@ -548,7 +548,8 @@ function calculateTokenMetrics(text, durationMs) {
     const speedRate = Math.round(wordCount / segmentsSec);
     return {
         wordCount: wordCount,
-        speed: speedRate > 0 ? speedRate : 12
+        speed: speedRate > 0 ? speedRate : 12,
+        rtt: segmentsSec.toFixed(2)
     };
 }
 
@@ -650,7 +651,7 @@ function renderMarkdown(text) {
             continue;
         }
 
-        if (/^\s*#{1,3}\s+/.test(line)) {
+        if (/^\s* #{1,3}\s+/.test(line)) {
             flushList(); flushParagraph(); flushTable();
             const level = line.match(/^\s*(#{1,3})\s+/)[1].length;
             const content = processInlineFormats(line.replace(/^\s*#{1,3}\s+/, "").trim());
@@ -772,6 +773,8 @@ async function askQuestion() {
         pending: true,
     });
 
+    const roundTripStartTime = Date.now();
+
     try {
         const response = await fetch(API_URL, {
             method: "POST",
@@ -783,25 +786,21 @@ async function askQuestion() {
         if (!response.ok) throw new Error(`Backend error ${response.status}`);
 
         const data = await response.json();
+        const totalLatencyMs = Date.now() - roundTripStartTime;
+        
         const planText = data.plan || "";
         const answerText = data.answer || "I couldn't generate a response. Please try again.";
         const replyHtml = buildAssistantHtml(planText, answerText);
 
         handleUpdatingBanner(data.is_updating);
 
-        // MODIFICATION: If the tab is hidden or minimized when data arrives, skip the simulated
-        // typing effect interval animation completely so browser throttling doesn't stall execution.
-        let durationMs = 0;
         if (document.hidden) {
             pendingReply.innerHTML = replyHtml;
-            durationMs = 50; // Mock minimal speed delta for background execution
         } else {
-            const startTime = Date.now();
             await streamAssistantResponse(pendingReply, planText, answerText, replyHtml);
-            durationMs = Date.now() - startTime;
         }
         
-        const generatedMetrics = calculateTokenMetrics(answerText, durationMs);
+        const generatedMetrics = calculateTokenMetrics(answerText, totalLatencyMs);
         const conversation = getCurrentConversation();
         const currentIdx = conversation ? conversation.messages.length - 1 : 0;
         
@@ -810,7 +809,7 @@ async function askQuestion() {
         
         const metricsContainer = document.createElement("div");
         metricsContainer.className = "message-metrics-badge";
-        metricsContainer.textContent = `⏱️ ${generatedMetrics.wordCount} words | ${generatedMetrics.speed} words/sec`;
+        metricsContainer.textContent = `⏱️ ${generatedMetrics.wordCount} words | ${generatedMetrics.speed} words/sec (RTT: ${generatedMetrics.rtt}s)`;
         pendingReply.appendChild(metricsContainer);
 
         updateLastAssistantMessage(replyHtml, true, answerText, generatedMetrics);
@@ -847,8 +846,7 @@ async function streamAssistantResponse(element, planText, answerText, finalHtml)
                 return;
             }
             
-            // Advance by 15 characters per tick instead of 1 character to speed it up drastically
-            position += 15; 
+            position += 45; 
             element.textContent = answerText.slice(0, position);
             
             if (position >= answerText.length) {
@@ -856,7 +854,7 @@ async function streamAssistantResponse(element, planText, answerText, finalHtml)
                 element.innerHTML = finalHtml;
                 resolve();
             }
-        }, 10); // Dropped tick interval down to 10ms
+        }, 10);
     });
 }
 function scrollToBottom() {
@@ -880,13 +878,69 @@ function exportConversation(format) {
     }
 
     if (format === "pdf") {
-        const content = conversation.messages.map(m => `<div class="pdf-msg-card pdf-${m.role}"><div class="pdf-role-badge">${m.role === "user" ? "User Question" : "Agent Answer"}</div><div class="pdf-text-body">${m.html ? m.content : `<p>${escapeHtml(m.content).replace(/\n/g, "<br>")}</p>`}</div></div>`).join("");
-        const printWindow = window.open("", "_blank");
-        if (!printWindow) return;
-        printWindow.document.write(`<!DOCTYPE html><html><head><style>body { font-family: sans-serif; padding: 32px; } .pdf-msg-card { margin-bottom: 24px; padding: 18px; border-radius: 12px; border: 1px solid #e2e8f0; } .pdf-user { background: #f8fafc; border-left: 4px solid #3b82f6; } .pdf-assistant { background: #fafafa; border-left: 4px solid #10b981; } .pdf-role-badge { font-weight: bold; font-size: 12px; margin-bottom: 8px; }</style></head><body><h1>${conversation.title}</h1>${content}</body></html>`);
-        printWindow.document.close();
-        setTimeout(() => { printWindow.focus(); printWindow.print(); }, 300);
+        const modal = document.getElementById("pdfEditModal");
+        const titleInput = document.getElementById("pdfReportTitle");
+        const contentArea = document.getElementById("pdfReportContent");
+
+        if (modal && titleInput && contentArea) {
+            titleInput.value = conversation.title || "Security Audit Report";
+            
+            let aggregatedText = "";
+            conversation.messages.forEach(m => {
+                const identityLabel = m.role === "user" ? "USER QUESTION" : "AGENT ASSESSMENT";
+                const cleanText = m.content.replace(/<\/?[^>]+(>|$)/g, "");
+                aggregatedText += `=========================================\n[${identityLabel}]\n=========================================\n\n${cleanText}\n\n\n`;
+            });
+            
+            contentArea.value = aggregatedText;
+            modal.style.display = "flex";
+        }
     }
+}
+
+function closePdfModal() {
+    const modal = document.getElementById("pdfEditModal");
+    if (modal) modal.style.display = "none";
+}
+
+function generateFinalPdfFromModal() {
+    const editedTitle = document.getElementById("pdfReportTitle").value || "Security Copilot Report";
+    const editedContent = document.getElementById("pdfReportContent").value || "";
+    
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+
+    const formattedBodyContent = editedContent
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\n/g, "<br>");
+
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>${editedTitle}</title>
+            <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 40px; color: #0f172a; line-height: 1.6; }
+                h1 { font-size: 28px; color: #1e3a8a; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 24px; }
+                .pdf-text-workspace { font-family: "Courier New", Courier, monospace; font-size: 14px; white-space: pre-wrap; background: #f8fafc; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px; }
+            </style>
+        </head>
+        <body>
+            <h1>${editedTitle}</h1>
+            <div class="pdf-text-workspace">${formattedBodyContent}</div>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+    
+    closePdfModal();
+    
+    setTimeout(() => { 
+        printWindow.focus(); 
+        printWindow.print(); 
+    }, 400);
 }
 
 function handleUpdatingBanner(isUpdating) {

@@ -166,6 +166,26 @@
 
 </div>
 
+<div id="pdfEditModal" class="pdf-modal-overlay" style="display: none;">
+    <div class="pdf-modal-content">
+        <div class="pdf-modal-header">
+            <h3>📝 Review & Edit PDF Report (Man-in-the-Loop)</h3>
+            <button type="button" class="close-modal-btn" onclick="closePdfModal()">✕</button>
+        </div>
+        <div class="pdf-modal-body">
+            <label for="pdfReportTitle" style="font-weight: bold; font-size: 14px;">Document Title:</label>
+            <input type="text" id="pdfReportTitle" class="pdf-input-title">
+            
+            <label for="pdfReportContent" style="font-weight: bold; font-size: 14px;">Report Narrative Workspace:</label>
+            <textarea id="pdfReportContent" rows="15" class="pdf-textarea-body"></textarea>
+        </div>
+        <div class="pdf-modal-footer">
+            <button type="button" class="modal-btn-cancel" onclick="closePdfModal()">Cancel</button>
+            <button type="button" class="modal-btn-confirm" onclick="generateFinalPdfFromModal()">🖨️ Compile & Print PDF</button>
+        </div>
+    </div>
+</div>
+
 <script src="script.js"></script>
 
 </body>
